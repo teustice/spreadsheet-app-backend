@@ -2,7 +2,8 @@ let db = require("mongoose");
 
 let todoSchema = new db.Schema({
     title: {type: String, required: true},
-    text: {type: String, required: true}
+    text: {type: String, required: true},
+    userId: {type: Number, required: true}
 });
 
 todoSchema.methods.getTitles = function () {

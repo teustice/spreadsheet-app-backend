@@ -8,7 +8,7 @@ import Users from '../models/user';
 //POST new user route (optional, everyone has access)
 router.post('/', auth.optional, (req, res, next) => {
     const { body: { user } } = req;
-    console.log(user)
+    console.log(req)
 
     if(!user.email) {
         return res.status(422).json({
@@ -38,7 +38,7 @@ router.post('/', auth.optional, (req, res, next) => {
 router.post('/login', auth.optional, (req, res, next) => {
     const { body: { user } } = req;
 
-    if(!user.email) {
+    if(!user || !user.email) {
         return res.status(422).json({
             errors: {
                 email: 'is required',
@@ -46,7 +46,7 @@ router.post('/login', auth.optional, (req, res, next) => {
         });
     }
 
-    if(!user.password) {
+    if(!user || !user.password) {
         return res.status(422).json({
             errors: {
                 password: 'is required',
@@ -66,7 +66,7 @@ router.post('/login', auth.optional, (req, res, next) => {
             return res.json({ user: user.toAuthJSON() });
         }
 
-        return status(400).info;
+        return res.status(400).json(info);
     })(req, res, next);
 });
 
@@ -81,7 +81,7 @@ router.get('/current', auth.required, (req, res, next) => {
             }
 
             return res.json({ user: user.toAuthJSON() });
-        });
+        })
 });
 
 module.exports = router;
