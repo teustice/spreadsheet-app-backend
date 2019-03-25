@@ -2,13 +2,8 @@ const mongoose = require('mongoose');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 
-const { Schema } = mongoose;
 
-const UsersSchema = new Schema({
-    email: String,
-    hash: String,
-    salt: String,
-});
+import UsersSchema from '../schema/UsersSchema'
 
 UsersSchema.methods.setPassword = function(password) {
     this.salt = crypto.randomBytes(16).toString('hex');

@@ -1,16 +1,12 @@
 let db = require("mongoose");
 
-let todoSchema = new db.Schema({
-    title: {type: String, required: true},
-    text: {type: String, required: true},
-    userId: {type: Number, required: true}
-});
+import TodoSchema from '../schema/TodoSchema'
 
-todoSchema.methods.getTitles = function () {
+TodoSchema.methods.getTitles = function () {
     var justText = `Here is the TITLE copy of this todo: ${this.title}`;
     return justText;
 }
 
-let Todo = db.model("Todo", todoSchema);
+let Todo = db.model("Todo", TodoSchema);
 
 export default Todo;

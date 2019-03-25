@@ -1,10 +1,13 @@
 var express = require('express')
 var router = express.Router()
 import Todo from '../models/todo';
+import User from '../models/user';
 
 // middleware that is specific to this router
 router.get('/', (req, res) => {
     Todo.find(function(err, todo) {
+        todo.user = User.findById(todo.userId)
+        console.log(todo);
         res.send(todo);
     })
 });
@@ -13,7 +16,7 @@ router.get('/', (req, res) => {
 router.get('/:id', (req, res) => {
     Todo.findById(req.params.id, function(err, todo) {
         if(err) {
-            res.status(400).send("A Todo with that ID does not exist " + err);
+            res.status(422).json({errors: "" + err});
         } else {
             res.send(todo);
         }
@@ -25,10 +28,10 @@ router.post("", (req, res) => {
     let todo = new Todo(req.body);
     todo.save()
         .then(item => {
-            res.send("item saved to database");
+            res.json("item saved to database");
         })
         .catch(err => {
-            res.status(400).send("unable to save to database! " + err);
+            res.status(422).json({errors: "" + err});
         });
 });
 
@@ -36,9 +39,9 @@ router.post("", (req, res) => {
 router.put('/:id', (req, res) => {
     Todo.findByIdAndUpdate(req.params.id, req.body, null, function(err) {
         if(err) {
-            res.status(400).send("A Todo with that ID does not exist " + err);
+            res.status(422).json({errors: "" + err});
         } else {
-            res.send('Updated Successfully');
+            res.json('Updated Successfully');
         }
     })
 });
@@ -47,9 +50,9 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
     Todo.findByIdAndDelete(req.params.id, function(err) {
         if(err) {
-            res.status(400).send("A Todo with that ID does not exist " + err);
+            res.status(422).json({errors: "" + err});
         } else {
-            res.send('Deleted Successfully');
+            res.json('Deleted Successfully');
         }
     })
 });
