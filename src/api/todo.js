@@ -7,7 +7,6 @@ import User from '../models/user';
 router.get('/', (req, res) => {
     Todo.find(function(err, todo) {
         todo.user = User.findById(todo.userId)
-        console.log(todo);
         res.send(todo);
     })
 });

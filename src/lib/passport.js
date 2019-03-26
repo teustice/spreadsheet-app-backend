@@ -17,3 +17,16 @@ passport.use(new LocalStrategy({
             return done(null, user);
         }).catch(done);
 }));
+
+passport.deserializeUser(function(id, done) {
+   Users.findOne({ _id: id }).populate('roles.admin').populate('roles.account').exec(function(err, user) {
+     if (user && user.roles && user.roles.admin) {
+       user.roles.admin.populate("groups", function(err, admin) {
+         done(err, user);
+       });
+     }
+     else {
+       done(err, user);
+     }
+   });
+ });

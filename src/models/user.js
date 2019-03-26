@@ -31,8 +31,42 @@ UsersSchema.methods.toAuthJSON = function() {
     return {
         _id: this._id,
         email: this.email,
+        roles: this.roles,
         token: this.generateJWT(),
     };
+};
+
+UsersSchema.methods.defaultReturnUrl = function() {
+  var returnUrl = '/';
+  if (this.canPlayRoleOf('account')) {
+    returnUrl = '/account/';
+  }
+
+  if (this.canPlayRoleOf('affiliate')) {
+    returnUrl = '/affiliate/';
+  }
+
+  if (this.canPlayRoleOf('admin')) {
+    returnUrl = '/admin/';
+  }
+
+  return returnUrl;
+};
+
+UsersSchema.methods.canPlayRoleOf = function(role) {
+  if (role === "admin" && this.roles.admin) {
+    return true;
+  }
+
+  if (role === "account" && this.roles.account) {
+    return true;
+  }
+
+  if (role === "affiliate" && this.roles.affiliate) {
+    return true;
+  }
+
+  return false;
 };
 
 export default mongoose.model('Users', UsersSchema);

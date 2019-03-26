@@ -5,10 +5,26 @@ const passport = require('passport');
 
 import Users from '../models/user';
 
+//Get list of users for admin interaction
+router.get('/', auth.required, (req, res, next) => {
+  const { payload: { id } } = req;
+
+  Users.findById(id)
+      .then((user) => {
+          if(!user.roles.admin) {
+            console.log(user);
+              res.status(400).json({errors: "Admin privilages required"});
+          } else {
+            Users.find(function(err, user) {
+                res.send(user);
+            })
+          }
+      })
+});
+
 //POST new user route (optional, everyone has access)
 router.post('/', auth.optional, (req, res, next) => {
     const { body: { user } } = req;
-    console.log(req)
 
     if(!user.email) {
         return res.status(422).json({
@@ -30,8 +46,13 @@ router.post('/', auth.optional, (req, res, next) => {
 
     finalUser.setPassword(user.password);
 
-    return finalUser.save()
-        .then(() => res.json({ user: finalUser.toAuthJSON() }));
+    return finalUser.save(function (err) {
+      if(err) {
+        res.status(400).json({errors: {Error: err.message}});
+      } else {
+        res.json({ user: finalUser.toAuthJSON()})
+      }
+    })
 });
 
 //POST login route (optional, everyone has access)
