@@ -5,9 +5,12 @@ const jwt = require('jsonwebtoken');
 
 import UsersSchema from '../schema/UsersSchema'
 
-UsersSchema.methods.setPassword = function(password) {
+UsersSchema.methods.setPassword = function(password, callback) {
     this.salt = crypto.randomBytes(16).toString('hex');
     this.hash = crypto.pbkdf2Sync(password, this.salt, 10000, 512, 'sha512').toString('hex');
+    if(callback) {
+      callback();
+    }
 };
 
 UsersSchema.methods.validatePassword = function(password) {
