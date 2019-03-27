@@ -109,7 +109,7 @@ router.post('/forgot', auth.optional, (req, res, next) => {
     function(token, done) {
       Users.findOne({ email: req.body.email }, function(err, user) {
         if (!user) {
-          return res.json({errors: {error: "There is no account associated with that email"}});
+          return res.redirect('/forgot');
         }
 
         user.resetPasswordToken = token;
@@ -135,18 +135,26 @@ router.post('/forgot', auth.optional, (req, res, next) => {
         from: 'spreadsheet@demo.com',
         subject: 'Password Reset - FB Holiday ',
         text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
-          'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
-          'http://' + req.headers.host + '/reset/' + token + '\n\n' +
+          'Please click on the following link, or paste this into your browser to complete the process:\n\n' + req.headers.origin + '/reset-password/' + token + '\n\n' +
           'If you did not request this, please ignore this email and your password will remain unchanged.\n'
       };
       smtpTransport.sendMail(mailOptions, function(err) {
-        req.json('An e-mail has been sent to ' + user.email + ' with further instructions.');
+        res.status(200).json('An e-mail has been sent to ' + user.email + ' with further instructions.');
         done(err, 'done');
       });
     }
   ], function(err) {
     if (err) return next(err);
     res.redirect('/forgot');
+  });
+});
+
+router.get('/reset-password/:token', function(req, res) {
+  Users.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
+    if (!user) {
+      return res.status(422).json({errors: {error: 'User not found'}});
+    }
+    res.json({user: user})
   });
 });
 
