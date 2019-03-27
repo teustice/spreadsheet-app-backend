@@ -55,6 +55,29 @@ router.post('/', auth.optional, (req, res, next) => {
     })
 });
 
+
+//Update User information
+router.put('/:id', auth.required, (req, res, next) => {
+    Users.update({ _id: req.params.id}, req.body, function(err, user){
+      if(!user){
+          req.flash('error', 'No account found');
+          return res.sendStatus(400);
+      }
+      var emailEdit = req.body.email;
+      var rolesEdit = req.body.roles;
+      if(emailEdit.length <= 0 || rolesEdit.length <= 0 ){
+          req.flash('error', 'One or more fields are empty');
+          return res.sendStatus(400);
+      }
+      else{
+          user.email = emailEdit;
+          user.roles = rolesEdit;
+
+          return res.sendStatus(200);
+      }
+    })
+});
+
 //POST login route (optional, everyone has access)
 router.post('/login', auth.optional, (req, res, next) => {
     const { body: { user } } = req;
@@ -104,5 +127,6 @@ router.get('/current', auth.required, (req, res, next) => {
             return res.json({ user: user.toAuthJSON() });
         })
 });
+
 
 module.exports = router;
