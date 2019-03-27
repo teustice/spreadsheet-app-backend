@@ -2,6 +2,9 @@ let express = require('express')
 let router = express.Router()
 let auth = require('./auth');
 const passport = require('passport');
+const nodemailer = require("nodemailer");
+import async from 'async';
+var crypto = require('crypto');
 
 import Users from '../models/user';
 
@@ -78,8 +81,8 @@ router.put('/:id', auth.required, (req, res, next) => {
     })
 });
 
-//Change Password
-router.post('/reset-password', auth.required, (req, res, next) => {
+//Update Password
+router.post('/update-password', auth.required, (req, res, next) => {
     Users.findOne({email: req.body.email}).then(function(sanitizedUser){
     if (sanitizedUser){
       sanitizedUser.setPassword(req.body.password, function(){
@@ -92,6 +95,59 @@ router.post('/reset-password', auth.required, (req, res, next) => {
   },function(err){
     console.error(err);
   })
+});
+
+//Reset Password
+router.post('/forgot', auth.optional, (req, res, next) => {
+  async.waterfall([
+    function(done) {
+      crypto.randomBytes(20, function(err, buf) {
+        var token = buf.toString('hex');
+        done(err, token);
+      });
+    },
+    function(token, done) {
+      Users.findOne({ email: req.body.email }, function(err, user) {
+        if (!user) {
+          return res.json({errors: {error: "There is no account associated with that email"}});
+        }
+
+        user.resetPasswordToken = token;
+        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+
+        user.save(function(err) {
+          done(err, token, user);
+        });
+      });
+    },
+    function(token, user, done) {
+      var smtpTransport = nodemailer.createTransport( {
+        host: "smtp.gmail.com",
+        port: 587,
+        secure: false, // true for 465, false for other ports
+        auth: {
+          user: 'cbdonotreply@gmail.com', // generated ethereal user
+          pass: 'HDQJjZi3ZoxgmukrmAAas(F7' // generated ethereal password
+        }
+      });
+      var mailOptions = {
+        to: user.email,
+        from: 'spreadsheet@demo.com',
+        subject: 'Password Reset - FB Holiday ',
+        text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
+          'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
+          'http://' + req.headers.host + '/reset/' + token + '\n\n' +
+          'If you did not request this, please ignore this email and your password will remain unchanged.\n'
+      };
+      smtpTransport.sendMail(mailOptions, function(err) {
+        req.json('An e-mail has been sent to ' + user.email + ' with further instructions.');
+        done(err, 'done');
+      });
+    }
+  ], function(err) {
+    if (err) return next(err);
+    res.redirect('/forgot');
+  });
 });
 
 //POST login route (optional, everyone has access)
