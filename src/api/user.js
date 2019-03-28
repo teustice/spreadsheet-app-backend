@@ -154,7 +154,7 @@ router.get('/reset-password/:token', function(req, res) {
     if (!user) {
       return res.status(422).json({errors: {error: 'User not found'}});
     }
-    res.json({user: user})
+    res.json({user: user.toAuthJSON()})
   });
 });
 

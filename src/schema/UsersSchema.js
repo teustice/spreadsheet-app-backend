@@ -5,6 +5,8 @@ const UsersSchema = new mongoose.Schema({
     email: {type: String, unique: true},
     hash: String,
     salt: String,
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
     roles: {
       admin: {type: Boolean, default: false},
       affiliate: {type: Boolean, default: true}
