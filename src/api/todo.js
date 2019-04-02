@@ -27,11 +27,22 @@ router.post("", (req, res) => {
     let todo = new Todo(req.body);
     todo.save()
         .then(item => {
-            res.json("item saved to database");
+            res.status(200).json("item saved to database");
         })
         .catch(err => {
             res.status(422).json({errors: "" + err});
         });
+});
+
+//Batch Create Todos
+router.post("/batch", (req, res) => {
+    Todo.insertMany(req.body)
+      .then(function (docs) {
+          res.json(docs);
+      })
+      .catch(function (err) {
+          res.status(500).send(err);
+      });
 });
 
 //Update Todos
@@ -54,6 +65,17 @@ router.delete('/:id', (req, res) => {
             res.json('Deleted Successfully');
         }
     })
+});
+
+//Batch Delete Todos
+router.post("/batch-delete", (req, res) => {
+    Todo.deleteMany({_id: { $in: req.body}})
+      .then(function (docs) {
+          res.json(docs);
+      })
+      .catch(function (err) {
+          res.status(500).send(err);
+      });
 });
 
 module.exports = router
