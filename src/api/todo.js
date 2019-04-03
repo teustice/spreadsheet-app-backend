@@ -6,9 +6,8 @@ import User from '../models/user';
 // middleware that is specific to this router
 router.get('/', (req, res) => {
     Todo.find(function(err, todo) {
-        todo.user = User.findById(todo.userId)
         res.send(todo);
-    })
+    }).populate('user')
 });
 
 //Get Todos by id
