@@ -7,7 +7,7 @@ import User from '../models/user';
 router.get('/', (req, res) => {
     Todo.find(function(err, todo) {
         res.send(todo);
-    }).populate('user')
+    }).lean().populate('user')
 });
 
 //Get Todos by id
